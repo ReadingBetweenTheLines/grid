@@ -1,0 +1,895 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pemburu Bug Biner: Edisi Terintegrasi Spreadsheet</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card: #1e293b;
+      --accent: #38bdf8;
+      --accent-hover: #0284c7;
+      --cell-bg: #1e293b; /* Warna latar belakang sel seragam untuk 0 dan 1 */
+      --cell-text: #f8fafc;
+      --text: #f8fafc;
+      --muted: #94a3b8;
+      --border: #475569;
+      --success: #22c55e;
+      --error: #ef4444;
+      --flagged: #f59e0b;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      user-select: none;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 1.5rem;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 1.25rem;
+      max-width: 650px;
+    }
+
+    h1 {
+      font-size: 1.8rem;
+      color: var(--accent);
+      margin-bottom: 0.25rem;
+    }
+
+    .subtitle {
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    .student-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      align-items: center;
+      background: rgba(15, 23, 42, 0.7);
+      border: 1px solid var(--border);
+      padding: 0.75rem 1rem;
+      border-radius: 8px;
+      margin-bottom: 1.25rem;
+      width: 100%;
+      max-width: 720px;
+    }
+
+    .student-bar label {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--accent);
+      white-space: nowrap;
+    }
+
+    .student-bar input {
+      background: #090d16;
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 0.45rem 0.8rem;
+      border-radius: 4px;
+      font-size: 0.9rem;
+      flex: 1;
+      min-width: 180px;
+      outline: none;
+    }
+
+    .student-bar input:focus {
+      border-color: var(--accent);
+    }
+
+    .token-badge {
+      font-family: 'Courier New', monospace;
+      font-size: 0.85rem;
+      background: rgba(56, 189, 248, 0.1);
+      color: var(--accent);
+      padding: 0.35rem 0.6rem;
+      border-radius: 4px;
+      border: 1px dashed var(--accent);
+    }
+
+    .container {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.5rem;
+      max-width: 720px;
+      width: 100%;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    }
+
+    .level-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 0.75rem;
+      margin-bottom: 1rem;
+    }
+
+    .badge {
+      background: rgba(56, 189, 248, 0.15);
+      color: var(--accent);
+      padding: 0.25rem 0.6rem;
+      border-radius: 999px;
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+
+    .budget-tag {
+      background: rgba(245, 158, 11, 0.15);
+      color: var(--flagged);
+      padding: 0.25rem 0.6rem;
+      border-radius: 999px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      margin-left: 0.5rem;
+    }
+
+    .rule-box {
+      background: rgba(15, 23, 42, 0.7);
+      border-left: 4px solid var(--accent);
+      padding: 0.85rem 1rem;
+      border-radius: 6px;
+      margin-bottom: 1.25rem;
+    }
+
+    .rule-title {
+      font-weight: 700;
+      font-size: 0.85rem;
+      color: var(--accent);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 0.25rem;
+    }
+
+    .rule-text {
+      font-size: 0.95rem;
+      line-height: 1.4;
+    }
+
+    .workspace {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1rem;
+      margin: 1rem 0;
+    }
+
+    .grid-container {
+      display: grid;
+      gap: 5px;
+      background: #090d16;
+      padding: 8px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+    }
+
+    /* Sel monokrom seragam */
+    .cell {
+      width: 44px;
+      height: 44px;
+      border-radius: 6px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.15rem;
+      font-weight: bold;
+      font-family: 'Courier New', monospace;
+      transition: background-color 0.12s ease, transform 0.1s ease, border-color 0.12s ease;
+      background-color: var(--cell-bg);
+      color: var(--cell-text);
+      border: 2px solid var(--border);
+    }
+
+    .cell:hover {
+      transform: scale(0.96);
+      filter: brightness(1.25);
+    }
+
+    /* Indikasi border kuning hanya muncul ketika siswa mengklik/mengubah sel */
+    .cell.toggled {
+      border-color: var(--flagged);
+      box-shadow: 0 0 8px var(--flagged);
+    }
+
+    .legend {
+      display: flex;
+      justify-content: center;
+      gap: 1.5rem;
+      font-size: 0.85rem;
+      color: var(--muted);
+      margin-top: 0.5rem;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .indicator {
+      width: 14px;
+      height: 14px;
+      border-radius: 3px;
+    }
+
+    .status-box {
+      min-height: 28px;
+      text-align: center;
+      font-weight: 600;
+      font-size: 0.95rem;
+      margin-top: 0.5rem;
+    }
+
+    .status-box.success { color: var(--success); }
+    .status-box.error { color: var(--error); }
+
+    .sync-indicator {
+      font-size: 0.75rem;
+      color: var(--muted);
+      text-align: right;
+      margin-top: 0.25rem;
+    }
+
+    .action-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 1rem;
+    }
+
+    button {
+      padding: 0.55rem 1.1rem;
+      font-size: 0.9rem;
+      font-weight: 600;
+      border-radius: 6px;
+      border: none;
+      cursor: pointer;
+      transition: background-color 0.15s, opacity 0.15s;
+    }
+
+    .btn-sub {
+      background: #334155;
+      color: var(--text);
+    }
+    .btn-sub:hover:not(:disabled) { background: #475569; }
+
+    .btn-main {
+      background: var(--accent);
+      color: #0f172a;
+    }
+    .btn-main:hover:not(:disabled) { background: var(--accent-hover); }
+
+    button:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Pemburu Bug Biner</h1>
+    <p class="subtitle">Sistem Analisis Logika & Paritas Biner Otomatis</p>
+  </header>
+
+  <!-- Profil Siswa & Token Unik -->
+  <div class="student-bar">
+    <label for="student-name">Nama Siswa / No. Absen:</label>
+    <input type="text" id="student-name" placeholder="Tuliskan nama lengkap..." value="Siswa 1" />
+    <span class="token-badge" id="token-display">ID: #0000</span>
+  </div>
+
+  <div class="container">
+    <div class="level-header">
+      <div>
+        <strong id="lvl-num">Level 1</strong>: <span id="lvl-name">Memuat...</span>
+      </div>
+      <div>
+        <span class="badge" id="lvl-diff">Level 1 dari 8</span>
+        <span class="budget-tag" id="lvl-budget">Batas: 1 klik</span>
+      </div>
+    </div>
+
+    <div class="rule-box">
+      <div class="rule-title">Aturan Pola</div>
+      <div class="rule-text" id="rule-desc">Memuat aturan...</div>
+    </div>
+
+    <div class="workspace">
+      <div class="grid-container" id="grid"></div>
+    </div>
+
+    <div class="legend">
+      <div class="legend-item">
+        <div class="indicator" style="background: var(--cell-bg); border: 1px solid var(--border);"></div>
+        <span>Kotak Angka (0 / 1)</span>
+      </div>
+      <div class="legend-item">
+        <div class="indicator" style="border: 2px solid var(--flagged); background: transparent;"></div>
+        <span id="flips-count-label">Perubahan: 0 / 1</span>
+      </div>
+    </div>
+
+    <div class="status-box" id="status"></div>
+    <div class="sync-indicator" id="sync-status"></div>
+
+    <div class="action-bar">
+      <button class="btn-sub" id="prev-btn">Sebelumnya</button>
+      <div style="display: flex; gap: 0.5rem;">
+        <button class="btn-sub" id="reset-btn">Reset Grid</button>
+        <button class="btn-main" id="check-btn">Periksa Jawaban</button>
+      </div>
+      <button class="btn-main" id="next-btn" disabled>Level Berikutnya &rarr;</button>
+    </div>
+  </div>
+
+  <script>
+    // ==========================================
+    // KONFIGURASI INTEGRASI GOOGLE APPS SCRIPT
+    // ==========================================
+    const GOOGLE_APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxJTd8WruqLbctfU5GnOcm8-ygN_SzZ8ydEjYIFs8gz8cRMOPFhvKdn9YJ7_PKQ_MPv/exec";
+
+    let levelAttempts = {};
+    let levelStartTime = Date.now();
+
+    // ==========================================
+    // PRNG BERBASIS SEED
+    // ==========================================
+    let currentSeed = 1337;
+    function setSeedFromString(str) {
+      let hash = 0;
+      for (let i = 0; i < str.length; i++) {
+        hash = (hash << 5) - hash + str.charCodeAt(i);
+        hash |= 0;
+      }
+      currentSeed = Math.abs(hash) || 12345;
+    }
+
+    function seededRandom() {
+      currentSeed |= 0;
+      currentSeed = (currentSeed + 0x6D2B79F5) | 0;
+      let t = Math.imul(currentSeed ^ (currentSeed >>> 15), 1 | currentSeed);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    }
+
+    function randomInt(min, max) {
+      return Math.floor(seededRandom() * (max - min + 1)) + min;
+    }
+
+    function shuffleArray(arr) {
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(seededRandom() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+      return arr;
+    }
+
+    // ==========================================
+    // DEFINISI 8 LEVEL & ATURAN
+    // ==========================================
+    const levels = [
+      {
+        id: 1,
+        name: "Keseragaman Baris (Homogen)",
+        difficulty: "Pemanasan (4x4)",
+        size: 4,
+        maxEdits: 1,
+        rule: "Aturan: Setiap baris harus seragam (hanya berisi angka 0 semua atau 1 semua). Ada tepat 1 kotak salah yang merusak keseragaman barisnya.",
+        generate: () => {
+          const N = 4;
+          let g = [];
+          for (let r = 0; r < N; r++) {
+            const val = randomInt(0, 1);
+            g.push(Array(N).fill(val));
+          }
+          const bugR = randomInt(0, N - 1);
+          const bugC = randomInt(0, N - 1);
+          g[bugR][bugC] = 1 - g[bugR][bugC];
+          return g;
+        },
+        validate: (g) => g.every(row => row.every(val => val === row[0]))
+      },
+      {
+        id: 2,
+        name: "Identitas Diagonal (Utama / Anti)",
+        difficulty: "Mudah (4x4)",
+        size: 4,
+        maxEdits: 1,
+        rule: "Aturan: Garis diagonal lurus dari sudut ke sudut seberangnya HANYA boleh berisi angka 1. Semua kotak lainnya WAJIB bernilai 0. Temukan 1 kotak penyusup!",
+        generate: () => {
+          const N = 4;
+          const isAnti = randomInt(0, 1) === 1;
+          let g = Array.from({ length: N }, () => Array(N).fill(0));
+          for (let i = 0; i < N; i++) {
+            g[i][isAnti ? (N - 1 - i) : i] = 1;
+          }
+          let nonDiag = [];
+          for (let r = 0; r < N; r++) {
+            for (let c = 0; c < N; c++) {
+              if (isAnti ? (c !== N - 1 - r) : (r !== c)) nonDiag.push([r, c]);
+            }
+          }
+          const [bugR, bugC] = nonDiag[randomInt(0, nonDiag.length - 1)];
+          g[bugR][bugC] = 1;
+          return g;
+        },
+        validate: (g) => {
+          const N = g.length;
+          const checkMain = () => {
+            for (let r = 0; r < N; r++) {
+              for (let c = 0; c < N; c++) {
+                if (g[r][c] !== (r === c ? 1 : 0)) return false;
+              }
+            }
+            return true;
+          };
+          const checkAnti = () => {
+            for (let r = 0; r < N; r++) {
+              for (let c = 0; c < N; c++) {
+                if (g[r][c] !== (c === N - 1 - r ? 1 : 0)) return false;
+              }
+            }
+            return true;
+          };
+          return checkMain() || checkAnti();
+        }
+      },
+      {
+        id: 3,
+        name: "Simetri Cermin Vertikal",
+        difficulty: "Dasar (4x4)",
+        size: 4,
+        maxEdits: 1,
+        rule: "Aturan: Refleksi cermin tegak (kiri-kanan). Kolom 0 harus sama dengan Kolom 3, dan Kolom 1 harus sama dengan Kolom 2. Kamu bebas memperbaiki salah satu sisi.",
+        generate: () => {
+          const N = 4;
+          let g = Array.from({ length: N }, () => Array(N).fill(0));
+          for (let r = 0; r < N; r++) {
+            for (let c = 0; c < N / 2; c++) {
+              const val = randomInt(0, 1);
+              g[r][c] = val;
+              g[r][N - 1 - c] = val;
+            }
+          }
+          const bugR = randomInt(0, N - 1);
+          const bugC = randomInt(0, N - 1);
+          g[bugR][bugC] = 1 - g[bugR][bugC];
+          return g;
+        },
+        validate: (g) => {
+          const N = g.length;
+          for (let r = 0; r < N; r++) {
+            for (let c = 0; c < N / 2; c++) {
+              if (g[r][c] !== g[r][N - 1 - c]) return false;
+            }
+          }
+          return true;
+        }
+      },
+      {
+        id: 4,
+        name: "Papan Catur Selang-Seling",
+        difficulty: "Menengah (5x5)",
+        size: 5,
+        maxEdits: 1,
+        rule: "Aturan: Paritas selang-seling. Tidak boleh ada dua kotak bersebelahan (atas/bawah/kiri/kanan) yang bernilai sama. Temukan dan perbaiki 1 kotak yang keliru!",
+        generate: () => {
+          const N = 5;
+          const startVal = randomInt(0, 1);
+          let g = Array.from({ length: N }, () => Array(N).fill(0));
+          for (let r = 0; r < N; r++) {
+            for (let c = 0; c < N; c++) {
+              g[r][c] = (r + c) % 2 === 0 ? startVal : 1 - startVal;
+            }
+          }
+          const bugR = randomInt(0, N - 1);
+          const bugC = randomInt(0, N - 1);
+          g[bugR][bugC] = 1 - g[bugR][bugC];
+          return g;
+        },
+        validate: (g) => {
+          const N = g.length;
+          const start = g[0][0];
+          for (let r = 0; r < N; r++) {
+            for (let c = 0; c < N; c++) {
+              const expected = (r + c) % 2 === 0 ? start : 1 - start;
+              if (g[r][c] !== expected) return false;
+            }
+          }
+          return true;
+        }
+      },
+      {
+        id: 5,
+        name: "Paritas Baris Genap (Checksum)",
+        difficulty: "Menengah (5x5)",
+        size: 5,
+        maxEdits: 1,
+        rule: "Aturan: Pemeriksaan Paritas. Setiap baris HARUS memiliki jumlah angka 1 yang GENAP (total 1 harus 0, 2, atau 4). Temukan baris ganjil dan ubah salah satu kotaknya!",
+        generate: () => {
+          const N = 5;
+          let g = [];
+          for (let r = 0; r < N; r++) {
+            let row = [0, 0, 0, 0, 0];
+            const targetOnes = [0, 2, 4][randomInt(0, 2)];
+            let onesSet = 0;
+            while (onesSet < targetOnes) {
+              let pos = randomInt(0, N - 1);
+              if (row[pos] === 0) {
+                row[pos] = 1;
+                onesSet++;
+              }
+            }
+            g.push(row);
+          }
+          const bugR = randomInt(0, N - 1);
+          const bugC = randomInt(0, N - 1);
+          g[bugR][bugC] = 1 - g[bugR][bugC];
+          return g;
+        },
+        validate: (g) => g.every(row => row.reduce((a, b) => a + b, 0) % 2 === 0)
+      },
+      {
+        id: 6,
+        name: "Matriks Paritas 2D (Kode Hamming)",
+        difficulty: "Tantangan (5x5)",
+        size: 5,
+        maxEdits: 1,
+        rule: "Aturan: Paritas Dua Arah. SETIAP baris DAN SETIAP kolom wajib memiliki jumlah 1 yang GENAP. Titik potong baris ganjil dan kolom ganjil menentukan letak kotaknya!",
+        generate: () => {
+          const N = 5;
+          let g = Array.from({ length: N }, () => Array(N).fill(0));
+          for (let r = 0; r < N - 1; r++) {
+            for (let c = 0; c < N - 1; c++) {
+              g[r][c] = randomInt(0, 1);
+            }
+          }
+          for (let r = 0; r < N - 1; r++) {
+            const sum = g[r].slice(0, N - 1).reduce((a, b) => a + b, 0);
+            g[r][N - 1] = sum % 2 === 0 ? 0 : 1;
+          }
+          for (let c = 0; c < N; c++) {
+            let colSum = 0;
+            for (let r = 0; r < N - 1; r++) colSum += g[r][c];
+            g[N - 1][c] = colSum % 2 === 0 ? 0 : 1;
+          }
+          const bugR = randomInt(0, N - 1);
+          const bugC = randomInt(0, N - 1);
+          g[bugR][bugC] = 1 - g[bugR][bugC];
+          return g;
+        },
+        validate: (g) => {
+          const N = g.length;
+          for (let r = 0; r < N; r++) {
+            if (g[r].reduce((a, b) => a + b, 0) % 2 !== 0) return false;
+          }
+          for (let c = 0; c < N; c++) {
+            let sum = 0;
+            for (let r = 0; r < N; r++) sum += g[r][c];
+            if (sum % 2 !== 0) return false;
+          }
+          return true;
+        }
+      },
+      {
+        id: 7,
+        name: "Simetri Ganda 4 Arah (2 Bug)",
+        difficulty: "Mahir (6x6)",
+        size: 6,
+        maxEdits: 2,
+        rule: "Aturan: Cermin 4 Arah. Grid harus simetris secara Vertikal (kiri-kanan) DAN Horizontal (atas-bawah). Terdapat 2 kotak rusak, kamu punya batas 2 klik perbaikan.",
+        generate: () => {
+          const N = 6;
+          let g = Array.from({ length: N }, () => Array(N).fill(0));
+          for (let r = 0; r < N / 2; r++) {
+            for (let c = 0; c < N / 2; c++) {
+              const val = randomInt(0, 1);
+              g[r][c] = val;
+              g[r][N - 1 - c] = val;
+              g[N - 1 - r][c] = val;
+              g[N - 1 - r][N - 1 - c] = val;
+            }
+          }
+          let bugCount = 0;
+          let touched = new Set();
+          while (bugCount < 2) {
+            const br = randomInt(0, N - 1);
+            const bc = randomInt(0, N - 1);
+            const key = `${br},${bc}`;
+            if (!touched.has(key)) {
+              touched.add(key);
+              g[br][bc] = 1 - g[br][bc];
+              bugCount++;
+            }
+          }
+          return g;
+        },
+        validate: (g) => {
+          const N = g.length;
+          for (let r = 0; r < N; r++) {
+            for (let c = 0; c < N; c++) {
+              if (g[r][c] !== g[r][N - 1 - c]) return false;
+              if (g[r][c] !== g[N - 1 - r][c]) return false;
+            }
+          }
+          return true;
+        }
+      },
+      {
+        id: 8,
+        name: "Keseimbangan Latin Biner",
+        difficulty: "Master (6x6)",
+        size: 6,
+        maxEdits: 1,
+        rule: "Aturan: Keseimbangan Konstan. Tepat terdapat 3 angka '1' dan 3 angka '0' di SETIAP baris DAN di SETIAP kolom. Temukan 1 kotak perusak yang bisa menyeimbangkan baris dan kolom sekaligus!",
+        generate: () => {
+          const baseTemplate = [
+            [1, 1, 1, 0, 0, 0],
+            [0, 1, 1, 1, 0, 0],
+            [0, 0, 1, 1, 1, 0],
+            [0, 0, 0, 1, 1, 1],
+            [1, 0, 0, 0, 1, 1],
+            [1, 1, 0, 0, 0, 1]
+          ];
+          let rowOrder = shuffleArray([0, 1, 2, 3, 4, 5]);
+          let colOrder = shuffleArray([0, 1, 2, 3, 4, 5]);
+          let g = Array.from({ length: 6 }, () => Array(6).fill(0));
+          for (let r = 0; r < 6; r++) {
+            for (let c = 0; c < 6; c++) {
+              g[r][c] = baseTemplate[rowOrder[r]][colOrder[c]];
+            }
+          }
+          const bugR = randomInt(0, 5);
+          const bugC = randomInt(0, 5);
+          g[bugR][bugC] = 1 - g[bugR][bugC];
+          return g;
+        },
+        validate: (g) => {
+          const N = g.length;
+          for (let r = 0; r < N; r++) {
+            if (g[r].reduce((a, b) => a + b, 0) !== 3) return false;
+          }
+          for (let c = 0; c < N; c++) {
+            let sum = 0;
+            for (let r = 0; r < N; r++) sum += g[r][c];
+            if (sum !== 3) return false;
+          }
+          return true;
+        }
+      }
+    ];
+
+    let currentIdx = 0;
+    let grid = [];
+    let initialClone = [];
+
+    // DOM Bindings
+    const studentInput = document.getElementById("student-name");
+    const tokenDisplay = document.getElementById("token-display");
+    const gridEl = document.getElementById("grid");
+    const lvlNum = document.getElementById("lvl-num");
+    const lvlName = document.getElementById("lvl-name");
+    const lvlDiff = document.getElementById("lvl-diff");
+    const lvlBudget = document.getElementById("lvl-budget");
+    const ruleDesc = document.getElementById("rule-desc");
+    const statusBox = document.getElementById("status");
+    const syncStatus = document.getElementById("sync-status");
+    const flipsCountLabel = document.getElementById("flips-count-label");
+    const checkBtn = document.getElementById("check-btn");
+    const resetBtn = document.getElementById("reset-btn");
+    const prevBtn = document.getElementById("prev-btn");
+    const nextBtn = document.getElementById("next-btn");
+
+    function countEdits() {
+      let edits = 0;
+      const N = grid.length;
+      for (let r = 0; r < N; r++) {
+        for (let c = 0; c < N; c++) {
+          if (grid[r][c] !== initialClone[r][c]) edits++;
+        }
+      }
+      return edits;
+    }
+
+    function updateCounterUI() {
+      const edits = countEdits();
+      const max = levels[currentIdx].maxEdits;
+      flipsCountLabel.textContent = `Perubahan: ${edits} / ${max}`;
+      flipsCountLabel.style.color = edits > max ? "var(--error)" : "var(--muted)";
+    }
+
+    function loadLevel(idx) {
+      currentIdx = idx;
+      const lvl = levels[currentIdx];
+
+      levelStartTime = Date.now();
+
+      const rawSeedStr = `${studentInput.value.trim().toLowerCase()}_lvl_${lvl.id}`;
+      setSeedFromString(rawSeedStr);
+
+      let tokenHash = 0;
+      for (let i = 0; i < rawSeedStr.length; i++) {
+        tokenHash = (tokenHash << 5) - tokenHash + rawSeedStr.charCodeAt(i);
+        tokenHash |= 0;
+      }
+      tokenDisplay.textContent = `ID: #${Math.abs(tokenHash % 9000 + 1000)}`;
+
+      lvlNum.textContent = `Level ${lvl.id}`;
+      lvlName.textContent = lvl.name;
+      lvlDiff.textContent = `${lvl.difficulty} (${lvl.id} dari ${levels.length})`;
+      lvlBudget.textContent = `Batas: ${lvl.maxEdits} klik`;
+      ruleDesc.textContent = lvl.rule;
+      statusBox.textContent = "";
+      statusBox.className = "status-box";
+      syncStatus.textContent = "";
+
+      prevBtn.disabled = currentIdx === 0;
+      nextBtn.disabled = true;
+
+      const generated = lvl.generate();
+      grid = JSON.parse(JSON.stringify(generated));
+      initialClone = JSON.parse(JSON.stringify(generated));
+
+      updateCounterUI();
+      renderGrid(lvl.size);
+    }
+
+    function renderGrid(size) {
+      gridEl.innerHTML = "";
+      gridEl.style.gridTemplateColumns = `repeat(${size}, 44px)`;
+      gridEl.style.gridTemplateRows = `repeat(${size}, 44px)`;
+
+      for (let r = 0; r < size; r++) {
+        for (let c = 0; c < size; c++) {
+          const cell = document.createElement("div");
+          cell.className = "cell";
+          cell.dataset.r = r;
+          cell.dataset.c = c;
+          updateCellDisplay(cell, grid[r][c], r, c);
+
+          cell.addEventListener("click", () => {
+            grid[r][c] = grid[r][c] === 1 ? 0 : 1;
+            updateCellDisplay(cell, grid[r][c], r, c);
+            updateCounterUI();
+            statusBox.textContent = "";
+          });
+
+          gridEl.appendChild(cell);
+        }
+      }
+    }
+
+    // Pembaruan sel: warna background tetap sama, hanya angka dan status modifikasi yang berubah
+    function updateCellDisplay(cellEl, val, r, c) {
+      cellEl.textContent = val;
+
+      if (grid[r][c] !== initialClone[r][c]) {
+        cellEl.classList.add("toggled");
+      } else {
+        cellEl.classList.remove("toggled");
+      }
+    }
+
+    function logResultToSpreadsheet(isSuccess, edits) {
+      if (!GOOGLE_APPS_SCRIPT_URL || GOOGLE_APPS_SCRIPT_URL.includes("TEMPEL_URL")) {
+        syncStatus.textContent = "ℹ Google Sheets Tracker belum dikonfigurasi (mode lokal).";
+        return;
+      }
+
+      const lvl = levels[currentIdx];
+      const student = studentInput.value.trim() || "Anonim";
+      const token = tokenDisplay.textContent.replace("ID: #", "");
+      const durationSec = Math.round((Date.now() - levelStartTime) / 1000);
+
+      levelAttempts[lvl.id] = (levelAttempts[lvl.id] || 0) + 1;
+
+      const payload = {
+        studentName: student,
+        tokenId: token,
+        levelId: lvl.id,
+        levelName: lvl.name,
+        editsCount: edits,
+        maxEdits: lvl.maxEdits,
+        status: isSuccess ? "LULUS" : "GAGAL",
+        attemptNumber: levelAttempts[lvl.id],
+        durationSeconds: durationSec
+      };
+
+      syncStatus.textContent = "Mengirim progres ke guru...";
+
+      fetch(GOOGLE_APPS_SCRIPT_URL, {
+        method: "POST",
+        mode: "no-cors",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      })
+      .then(() => {
+        syncStatus.textContent = "✓ Terkirim ke Spreadsheet Guru.";
+      })
+      .catch((err) => {
+        console.warn("Log gagal terkirim:", err);
+        syncStatus.textContent = "⚠ Catatan tersimpan secara lokal (koneksi offline).";
+      });
+    }
+
+    function checkSolution() {
+      const lvl = levels[currentIdx];
+      const edits = countEdits();
+
+      if (edits === 0) {
+        statusBox.textContent = "⚠ Kamu belum mengubah kotak manapun. Klik kotak untuk membalik nilai bitnya.";
+        statusBox.className = "status-box error";
+        return;
+      }
+
+      if (edits > lvl.maxEdits) {
+        statusBox.textContent = `✗ Melebihi batas perubahan! Kamu melakukan ${edits} perubahan, batasnya hanya ${lvl.maxEdits}.`;
+        statusBox.className = "status-box error";
+        logResultToSpreadsheet(false, edits);
+        return;
+      }
+
+      const isValid = lvl.validate(grid);
+
+      if (isValid) {
+        statusBox.textContent = "✓ Hebat! Aturan pola berhasil dipulihkan dengan benar!";
+        statusBox.className = "status-box success";
+        nextBtn.disabled = false;
+        logResultToSpreadsheet(true, edits);
+      } else {
+        statusBox.textContent = "✗ Pola belum memenuhi aturan. Periksa kembali baris, kolom, atau simetrinya.";
+        statusBox.className = "status-box error";
+        logResultToSpreadsheet(false, edits);
+      }
+    }
+
+    function resetCurrent() {
+      grid = JSON.parse(JSON.stringify(initialClone));
+      const cells = gridEl.querySelectorAll(".cell");
+      cells.forEach(cell => {
+        const r = parseInt(cell.dataset.r);
+        const c = parseInt(cell.dataset.c);
+        updateCellDisplay(cell, grid[r][c], r, c);
+      });
+      updateCounterUI();
+      statusBox.textContent = "";
+    }
+
+    // Event Handlers
+    studentInput.addEventListener("change", () => loadLevel(currentIdx));
+    checkBtn.addEventListener("click", checkSolution);
+    resetBtn.addEventListener("click", resetCurrent);
+    prevBtn.addEventListener("click", () => {
+      if (currentIdx > 0) loadLevel(currentIdx - 1);
+    });
+    nextBtn.addEventListener("click", () => {
+      if (currentIdx < levels.length - 1) {
+        loadLevel(currentIdx + 1);
+      } else {
+        statusBox.textContent = "🎉 Luar biasa! Seluruh tantangan logika dan bug biner berhasil kamu taklukkan!";
+        statusBox.className = "status-box success";
+      }
+    });
+
+    loadLevel(0);
+  </script>
+</body>
+</html>
