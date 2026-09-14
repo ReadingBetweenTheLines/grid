@@ -3,14 +3,14 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Pemburu Bug Biner: Edisi Terintegrasi Spreadsheet</title>
+  <title>Pemburu Bug Biner: 15 Tantangan Logika</title>
   <style>
     :root {
       --bg: #0f172a;
       --card: #1e293b;
       --accent: #38bdf8;
       --accent-hover: #0284c7;
-      --cell-bg: #1e293b; /* Warna latar belakang sel seragam untuk 0 dan 1 */
+      --cell-bg: #1e293b;
       --cell-text: #f8fafc;
       --text: #f8fafc;
       --muted: #94a3b8;
@@ -41,7 +41,7 @@
     header {
       text-align: center;
       margin-bottom: 1.25rem;
-      max-width: 650px;
+      max-width: 700px;
     }
 
     h1 {
@@ -66,7 +66,7 @@
       border-radius: 8px;
       margin-bottom: 1.25rem;
       width: 100%;
-      max-width: 720px;
+      max-width: 740px;
     }
 
     .student-bar label {
@@ -107,7 +107,7 @@
       border: 1px solid var(--border);
       border-radius: 12px;
       padding: 1.5rem;
-      max-width: 720px;
+      max-width: 740px;
       width: 100%;
       box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
     }
@@ -172,23 +172,19 @@
 
     .grid-container {
       display: grid;
-      gap: 5px;
+      gap: 4px;
       background: #090d16;
       padding: 8px;
       border-radius: 8px;
       border: 1px solid var(--border);
     }
 
-    /* Sel monokrom seragam */
     .cell {
-      width: 44px;
-      height: 44px;
       border-radius: 6px;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 1.15rem;
       font-weight: bold;
       font-family: 'Courier New', monospace;
       transition: background-color 0.12s ease, transform 0.1s ease, border-color 0.12s ease;
@@ -202,7 +198,6 @@
       filter: brightness(1.25);
     }
 
-    /* Indikasi border kuning hanya muncul ketika siswa mengklik/mengubah sel */
     .cell.toggled {
       border-color: var(--flagged);
       box-shadow: 0 0 8px var(--flagged);
@@ -286,10 +281,9 @@
 
   <header>
     <h1>Pemburu Bug Biner</h1>
-    <p class="subtitle">Sistem Analisis Logika & Paritas Biner Otomatis</p>
+    <p class="subtitle">15 Tantangan Algoritma & Logika Matriks Biner</p>
   </header>
 
-  <!-- Profil Siswa & Token Unik -->
   <div class="student-bar">
     <label for="student-name">Nama Siswa / No. Absen:</label>
     <input type="text" id="student-name" placeholder="Tuliskan nama lengkap..." value="Siswa 1" />
@@ -302,7 +296,7 @@
         <strong id="lvl-num">Level 1</strong>: <span id="lvl-name">Memuat...</span>
       </div>
       <div>
-        <span class="badge" id="lvl-diff">Level 1 dari 8</span>
+        <span class="badge" id="lvl-diff">Level 1 dari 15</span>
         <span class="budget-tag" id="lvl-budget">Batas: 1 klik</span>
       </div>
     </div>
@@ -342,7 +336,7 @@
 
   <script>
     // ==========================================
-    // KONFIGURASI INTEGRASI GOOGLE APPS SCRIPT
+    // KONFIGURASI GOOGLE APPS SCRIPT
     // ==========================================
     const GOOGLE_APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxJTd8WruqLbctfU5GnOcm8-ygN_SzZ8ydEjYIFs8gz8cRMOPFhvKdn9YJ7_PKQ_MPv/exec";
 
@@ -383,265 +377,346 @@
     }
 
     // ==========================================
-    // DEFINISI 8 LEVEL & ATURAN
+    // 15 LEVEL PROSEDURAL & ATURAN VALIDASI
     // ==========================================
     const levels = [
+      // 1. Warmup (4x4)
       {
         id: 1,
         name: "Keseragaman Baris (Homogen)",
         difficulty: "Pemanasan (4x4)",
         size: 4,
         maxEdits: 1,
-        rule: "Aturan: Setiap baris harus seragam (hanya berisi angka 0 semua atau 1 semua). Ada tepat 1 kotak salah yang merusak keseragaman barisnya.",
+        rule: "Aturan: Setiap baris harus seragam (hanya berisi angka 0 semua atau 1 semua). Ada tepat 1 kotak rusak.",
         generate: () => {
-          const N = 4;
           let g = [];
-          for (let r = 0; r < N; r++) {
-            const val = randomInt(0, 1);
-            g.push(Array(N).fill(val));
+          for (let r = 0; r < 4; r++) {
+            g.push(Array(4).fill(randomInt(0, 1)));
           }
-          const bugR = randomInt(0, N - 1);
-          const bugC = randomInt(0, N - 1);
-          g[bugR][bugC] = 1 - g[bugR][bugC];
+          const br = randomInt(0, 3), bc = randomInt(0, 3);
+          g[br][bc] = 1 - g[br][bc];
           return g;
         },
         validate: (g) => g.every(row => row.every(val => val === row[0]))
       },
+
+      // 2. Diagonal Identity (4x4)
       {
         id: 2,
         name: "Identitas Diagonal (Utama / Anti)",
         difficulty: "Mudah (4x4)",
         size: 4,
         maxEdits: 1,
-        rule: "Aturan: Garis diagonal lurus dari sudut ke sudut seberangnya HANYA boleh berisi angka 1. Semua kotak lainnya WAJIB bernilai 0. Temukan 1 kotak penyusup!",
+        rule: "Aturan: Garis lurus diagonal dari satu sudut ke sudut seberangnya HANYA berisi 1. Semua kotak lainnya WAJIB 0. Temukan 1 kotak penyusup!",
         generate: () => {
-          const N = 4;
           const isAnti = randomInt(0, 1) === 1;
-          let g = Array.from({ length: N }, () => Array(N).fill(0));
-          for (let i = 0; i < N; i++) {
-            g[i][isAnti ? (N - 1 - i) : i] = 1;
-          }
+          let g = Array.from({ length: 4 }, () => Array(4).fill(0));
+          for (let i = 0; i < 4; i++) g[i][isAnti ? (3 - i) : i] = 1;
           let nonDiag = [];
-          for (let r = 0; r < N; r++) {
-            for (let c = 0; c < N; c++) {
-              if (isAnti ? (c !== N - 1 - r) : (r !== c)) nonDiag.push([r, c]);
+          for (let r = 0; r < 4; r++) {
+            for (let c = 0; c < 4; c++) {
+              if (isAnti ? (c !== 3 - r) : (r !== c)) nonDiag.push([r, c]);
             }
           }
-          const [bugR, bugC] = nonDiag[randomInt(0, nonDiag.length - 1)];
-          g[bugR][bugC] = 1;
+          const [br, bc] = nonDiag[randomInt(0, nonDiag.length - 1)];
+          g[br][bc] = 1;
           return g;
         },
         validate: (g) => {
-          const N = g.length;
-          const checkMain = () => {
-            for (let r = 0; r < N; r++) {
-              for (let c = 0; c < N; c++) {
+          const N = 4;
+          const chkMain = () => {
+            for (let r = 0; r < N; r++)
+              for (let c = 0; c < N; c++)
                 if (g[r][c] !== (r === c ? 1 : 0)) return false;
-              }
-            }
             return true;
           };
-          const checkAnti = () => {
-            for (let r = 0; r < N; r++) {
-              for (let c = 0; c < N; c++) {
+          const chkAnti = () => {
+            for (let r = 0; r < N; r++)
+              for (let c = 0; c < N; c++)
                 if (g[r][c] !== (c === N - 1 - r ? 1 : 0)) return false;
-              }
-            }
             return true;
           };
-          return checkMain() || checkAnti();
+          return chkMain() || chkAnti();
         }
       },
+
+      // 3. Vertical Mirror (4x4)
       {
         id: 3,
         name: "Simetri Cermin Vertikal",
+        difficulty: "Mudah (4x4)",
+        size: 4,
+        maxEdits: 1,
+        rule: "Aturan: Refleksi tegak (kiri-kanan). Kolom 0 sama dengan Kolom 3, dan Kolom 1 sama dengan Kolom 2. Kamu bebas memperbaiki salah satu sisi.",
+        generate: () => {
+          let g = Array.from({ length: 4 }, () => Array(4).fill(0));
+          for (let r = 0; r < 4; r++) {
+            for (let c = 0; c < 2; c++) {
+              const v = randomInt(0, 1);
+              g[r][c] = v; g[r][3 - c] = v;
+            }
+          }
+          g[randomInt(0, 3)][randomInt(0, 3)] ^= 1;
+          return g;
+        },
+        validate: (g) => {
+          for (let r = 0; r < 4; r++)
+            for (let c = 0; c < 2; c++)
+              if (g[r][c] !== g[r][3 - c]) return false;
+          return true;
+        }
+      },
+
+      // 4. Inverted Horizontal Mirror (4x4)
+      {
+        id: 4,
+        name: "Simetri Cermin Terbalik (Horisontal)",
         difficulty: "Dasar (4x4)",
         size: 4,
         maxEdits: 1,
-        rule: "Aturan: Refleksi cermin tegak (kiri-kanan). Kolom 0 harus sama dengan Kolom 3, dan Kolom 1 harus sama dengan Kolom 2. Kamu bebas memperbaiki salah satu sisi.",
+        rule: "Aturan: Nilai baris bawah merupakan KEBALIKAN (inversi biner NOT) dari baris atasnya (Baris 3 kebalikan Baris 0; Baris 2 kebalikan Baris 1). Temukan 1 kotak yang salah!",
         generate: () => {
-          const N = 4;
-          let g = Array.from({ length: N }, () => Array(N).fill(0));
-          for (let r = 0; r < N; r++) {
-            for (let c = 0; c < N / 2; c++) {
-              const val = randomInt(0, 1);
-              g[r][c] = val;
-              g[r][N - 1 - c] = val;
+          let g = Array.from({ length: 4 }, () => Array(4).fill(0));
+          for (let r = 0; r < 2; r++) {
+            for (let c = 0; c < 4; c++) {
+              const v = randomInt(0, 1);
+              g[r][c] = v;
+              g[3 - r][c] = 1 - v;
             }
           }
-          const bugR = randomInt(0, N - 1);
-          const bugC = randomInt(0, N - 1);
-          g[bugR][bugC] = 1 - g[bugR][bugC];
+          g[randomInt(0, 3)][randomInt(0, 3)] ^= 1;
           return g;
         },
         validate: (g) => {
-          const N = g.length;
-          for (let r = 0; r < N; r++) {
-            for (let c = 0; c < N / 2; c++) {
-              if (g[r][c] !== g[r][N - 1 - c]) return false;
-            }
-          }
+          for (let r = 0; r < 2; r++)
+            for (let c = 0; c < 4; c++)
+              if (g[r][c] !== (1 - g[3 - r][c])) return false;
           return true;
         }
       },
+
+      // 5. Checkerboard (5x5)
       {
-        id: 4,
+        id: 5,
         name: "Papan Catur Selang-Seling",
+        difficulty: "Dasar (5x5)",
+        size: 5,
+        maxEdits: 1,
+        rule: "Aturan: Paritas selang-seling murni. Tidak boleh ada dua kotak bersebelahan (atas/bawah/kiri/kanan) memiliki angka yang sama.",
+        generate: () => {
+          const s = randomInt(0, 1);
+          let g = Array.from({ length: 5 }, (_, r) =>
+            Array.from({ length: 5 }, (_, c) => (r + c) % 2 === 0 ? s : 1 - s)
+          );
+          g[randomInt(0, 4)][randomInt(0, 4)] ^= 1;
+          return g;
+        },
+        validate: (g) => {
+          const s = g[0][0];
+          for (let r = 0; r < 5; r++)
+            for (let c = 0; c < 5; c++)
+              if (g[r][c] !== ((r + c) % 2 === 0 ? s : 1 - s)) return false;
+          return true;
+        }
+      },
+
+      // 6. Perimeter Frame (5x5)
+      {
+        id: 6,
+        name: "Bingkai Luar Tertutup",
         difficulty: "Menengah (5x5)",
         size: 5,
         maxEdits: 1,
-        rule: "Aturan: Paritas selang-seling. Tidak boleh ada dua kotak bersebelahan (atas/bawah/kiri/kanan) yang bernilai sama. Temukan dan perbaiki 1 kotak yang keliru!",
+        rule: "Aturan: Semua sel di batas keliling terluar wajib bernilai sama (semua 1 atau semua 0), dan bagian dalam tengah berlawanan nilai. Cari 1 sel yang bocor!",
         generate: () => {
-          const N = 5;
-          const startVal = randomInt(0, 1);
-          let g = Array.from({ length: N }, () => Array(N).fill(0));
-          for (let r = 0; r < N; r++) {
-            for (let c = 0; c < N; c++) {
-              g[r][c] = (r + c) % 2 === 0 ? startVal : 1 - startVal;
-            }
-          }
-          const bugR = randomInt(0, N - 1);
-          const bugC = randomInt(0, N - 1);
-          g[bugR][bugC] = 1 - g[bugR][bugC];
+          const borderVal = randomInt(0, 1);
+          const innerVal = 1 - borderVal;
+          let g = Array.from({ length: 5 }, (_, r) =>
+            Array.from({ length: 5 }, (_, c) =>
+              (r === 0 || r === 4 || c === 0 || c === 4) ? borderVal : innerVal
+            )
+          );
+          g[randomInt(0, 4)][randomInt(0, 4)] ^= 1;
           return g;
         },
         validate: (g) => {
-          const N = g.length;
-          const start = g[0][0];
-          for (let r = 0; r < N; r++) {
-            for (let c = 0; c < N; c++) {
-              const expected = (r + c) % 2 === 0 ? start : 1 - start;
-              if (g[r][c] !== expected) return false;
+          const bVal = g[0][0];
+          const iVal = 1 - bVal;
+          for (let r = 0; r < 5; r++) {
+            for (let c = 0; c < 5; c++) {
+              const isBorder = (r === 0 || r === 4 || c === 0 || c === 4);
+              if (isBorder && g[r][c] !== bVal) return false;
+              if (!isBorder && g[r][c] !== iVal) return false;
             }
           }
           return true;
         }
       },
+
+      // 7. Even Row Parity (5x5)
       {
-        id: 5,
+        id: 7,
         name: "Paritas Baris Genap (Checksum)",
         difficulty: "Menengah (5x5)",
         size: 5,
         maxEdits: 1,
-        rule: "Aturan: Pemeriksaan Paritas. Setiap baris HARUS memiliki jumlah angka 1 yang GENAP (total 1 harus 0, 2, atau 4). Temukan baris ganjil dan ubah salah satu kotaknya!",
+        rule: "Aturan: Setiap baris WAJIB memiliki jumlah angka 1 yang GENAP (total 0, 2, atau 4). Temukan baris ganjil dan ubah salah satu kotaknya!",
         generate: () => {
-          const N = 5;
           let g = [];
-          for (let r = 0; r < N; r++) {
+          for (let r = 0; r < 5; r++) {
             let row = [0, 0, 0, 0, 0];
-            const targetOnes = [0, 2, 4][randomInt(0, 2)];
-            let onesSet = 0;
-            while (onesSet < targetOnes) {
-              let pos = randomInt(0, N - 1);
-              if (row[pos] === 0) {
-                row[pos] = 1;
-                onesSet++;
-              }
+            const target = [0, 2, 4][randomInt(0, 2)];
+            let count = 0;
+            while (count < target) {
+              let p = randomInt(0, 4);
+              if (row[p] === 0) { row[p] = 1; count++; }
             }
             g.push(row);
           }
-          const bugR = randomInt(0, N - 1);
-          const bugC = randomInt(0, N - 1);
-          g[bugR][bugC] = 1 - g[bugR][bugC];
+          g[randomInt(0, 4)][randomInt(0, 4)] ^= 1;
           return g;
         },
-        validate: (g) => g.every(row => row.reduce((a, b) => a + b, 0) % 2 === 0)
+        validate: (g) => g.every(r => r.reduce((a, b) => a + b, 0) % 2 === 0)
       },
+
+      // 8. 2D Parity Matrix (5x5)
       {
-        id: 6,
+        id: 8,
         name: "Matriks Paritas 2D (Kode Hamming)",
-        difficulty: "Tantangan (5x5)",
+        difficulty: "Menengah (5x5)",
         size: 5,
         maxEdits: 1,
-        rule: "Aturan: Paritas Dua Arah. SETIAP baris DAN SETIAP kolom wajib memiliki jumlah 1 yang GENAP. Titik potong baris ganjil dan kolom ganjil menentukan letak kotaknya!",
+        rule: "Aturan: Paritas Dua Arah. SETIAP baris DAN SETIAP kolom wajib memiliki jumlah 1 yang GENAP. Titik temu baris dan kolom ganjil menentukan letak kotaknya!",
         generate: () => {
-          const N = 5;
-          let g = Array.from({ length: N }, () => Array(N).fill(0));
-          for (let r = 0; r < N - 1; r++) {
-            for (let c = 0; c < N - 1; c++) {
+          let g = Array.from({ length: 5 }, () => Array(5).fill(0));
+          for (let r = 0; r < 4; r++)
+            for (let c = 0; c < 4; c++)
               g[r][c] = randomInt(0, 1);
-            }
+
+          for (let r = 0; r < 4; r++) {
+            const s = g[r].slice(0, 4).reduce((a, b) => a + b, 0);
+            g[r][4] = s % 2 === 0 ? 0 : 1;
           }
-          for (let r = 0; r < N - 1; r++) {
-            const sum = g[r].slice(0, N - 1).reduce((a, b) => a + b, 0);
-            g[r][N - 1] = sum % 2 === 0 ? 0 : 1;
+          for (let c = 0; c < 5; c++) {
+            let cs = 0;
+            for (let r = 0; r < 4; r++) cs += g[r][c];
+            g[4][c] = cs % 2 === 0 ? 0 : 1;
           }
-          for (let c = 0; c < N; c++) {
-            let colSum = 0;
-            for (let r = 0; r < N - 1; r++) colSum += g[r][c];
-            g[N - 1][c] = colSum % 2 === 0 ? 0 : 1;
-          }
-          const bugR = randomInt(0, N - 1);
-          const bugC = randomInt(0, N - 1);
-          g[bugR][bugC] = 1 - g[bugR][bugC];
+          g[randomInt(0, 4)][randomInt(0, 4)] ^= 1;
           return g;
         },
         validate: (g) => {
-          const N = g.length;
-          for (let r = 0; r < N; r++) {
+          for (let r = 0; r < 5; r++)
             if (g[r].reduce((a, b) => a + b, 0) % 2 !== 0) return false;
-          }
-          for (let c = 0; c < N; c++) {
-            let sum = 0;
-            for (let r = 0; r < N; r++) sum += g[r][c];
-            if (sum % 2 !== 0) return false;
+          for (let c = 0; c < 5; c++) {
+            let cs = 0;
+            for (let r = 0; r < 5; r++) cs += g[r][c];
+            if (cs % 2 !== 0) return false;
           }
           return true;
         }
       },
+
+      // 9. Modulo 3 Periodic Shift (6x6)
       {
-        id: 7,
+        id: 9,
+        name: "Pola Gelombang Modulo-3",
+        difficulty: "Tantangan (6x6)",
+        size: 6,
+        maxEdits: 1,
+        rule: "Aturan: Kotak bernilai 1 HANYA jika penjumlahan nomor (baris + kolom) habis dibagi 3 ((r + c) mod 3 == 0). Temukan 1 sel yang melanggar aturan ritme ini!",
+        generate: () => {
+          let g = Array.from({ length: 6 }, (_, r) =>
+            Array.from({ length: 6 }, (_, c) => (r + c) % 3 === 0 ? 1 : 0)
+          );
+          g[randomInt(0, 5)][randomInt(0, 5)] ^= 1;
+          return g;
+        },
+        validate: (g) => {
+          for (let r = 0; r < 6; r++)
+            for (let c = 0; c < 6; c++)
+              if (g[r][c] !== ((r + c) % 3 === 0 ? 1 : 0)) return false;
+          return true;
+        }
+      },
+
+      // 10. Horizontal Mirror Symmetry (6x6)
+      {
+        id: 10,
+        name: "Refleksi Cermin Horisontal",
+        difficulty: "Tantangan (6x6)",
+        size: 6,
+        maxEdits: 1,
+        rule: "Aturan: Simetri cermin atas-bawah. Baris 0 harus identik dengan Baris 5, Baris 1 identik dengan Baris 4, dan Baris 2 identik dengan Baris 3. Perbaiki salah satu pasangannya!",
+        generate: () => {
+          let g = Array.from({ length: 6 }, () => Array(6).fill(0));
+          for (let r = 0; r < 3; r++) {
+            for (let c = 0; c < 6; c++) {
+              const v = randomInt(0, 1);
+              g[r][c] = v; g[5 - r][c] = v;
+            }
+          }
+          g[randomInt(0, 5)][randomInt(0, 5)] ^= 1;
+          return g;
+        },
+        validate: (g) => {
+          for (let r = 0; r < 3; r++)
+            for (let c = 0; c < 6; c++)
+              if (g[r][c] !== g[5 - r][c]) return false;
+          return true;
+        }
+      },
+
+      // 11. Dual-Glitch 4-Way Symmetry (6x6, 2 Edits)
+      {
+        id: 11,
         name: "Simetri Ganda 4 Arah (2 Bug)",
         difficulty: "Mahir (6x6)",
         size: 6,
         maxEdits: 2,
-        rule: "Aturan: Cermin 4 Arah. Grid harus simetris secara Vertikal (kiri-kanan) DAN Horizontal (atas-bawah). Terdapat 2 kotak rusak, kamu punya batas 2 klik perbaikan.",
+        rule: "Aturan: Cermin 4 Arah. Grid harus simetris secara Vertikal (kiri-kanan) DAN Horisontal (atas-bawah). Ada 2 kotak rusak, kamu memiliki batas 2 klik.",
         generate: () => {
-          const N = 6;
-          let g = Array.from({ length: N }, () => Array(N).fill(0));
-          for (let r = 0; r < N / 2; r++) {
-            for (let c = 0; c < N / 2; c++) {
-              const val = randomInt(0, 1);
-              g[r][c] = val;
-              g[r][N - 1 - c] = val;
-              g[N - 1 - r][c] = val;
-              g[N - 1 - r][N - 1 - c] = val;
+          let g = Array.from({ length: 6 }, () => Array(6).fill(0));
+          for (let r = 0; r < 3; r++) {
+            for (let c = 0; c < 3; c++) {
+              const v = randomInt(0, 1);
+              g[r][c] = v; g[r][5 - c] = v;
+              g[5 - r][c] = v; g[5 - r][5 - c] = v;
             }
           }
-          let bugCount = 0;
-          let touched = new Set();
-          while (bugCount < 2) {
-            const br = randomInt(0, N - 1);
-            const bc = randomInt(0, N - 1);
+          let bugs = 0, touched = new Set();
+          while (bugs < 2) {
+            const br = randomInt(0, 5), bc = randomInt(0, 5);
             const key = `${br},${bc}`;
             if (!touched.has(key)) {
               touched.add(key);
-              g[br][bc] = 1 - g[br][bc];
-              bugCount++;
+              g[br][bc] ^= 1;
+              bugs++;
             }
           }
           return g;
         },
         validate: (g) => {
-          const N = g.length;
-          for (let r = 0; r < N; r++) {
-            for (let c = 0; c < N; c++) {
-              if (g[r][c] !== g[r][N - 1 - c]) return false;
-              if (g[r][c] !== g[N - 1 - r][c]) return false;
+          for (let r = 0; r < 6; r++) {
+            for (let c = 0; c < 6; c++) {
+              if (g[r][c] !== g[r][5 - c]) return false;
+              if (g[r][c] !== g[5 - r][c]) return false;
             }
           }
           return true;
         }
       },
+
+      // 12. Latin Square Balance (6x6)
       {
-        id: 8,
+        id: 12,
         name: "Keseimbangan Latin Biner",
-        difficulty: "Master (6x6)",
+        difficulty: "Mahir (6x6)",
         size: 6,
         maxEdits: 1,
-        rule: "Aturan: Keseimbangan Konstan. Tepat terdapat 3 angka '1' dan 3 angka '0' di SETIAP baris DAN di SETIAP kolom. Temukan 1 kotak perusak yang bisa menyeimbangkan baris dan kolom sekaligus!",
+        rule: "Aturan: Tepat ada 3 angka '1' dan 3 angka '0' di SETIAP baris DAN di SETIAP kolom. Cari 1 sel yang membuat baris sekaligus kolomnya tidak seimbang!",
         generate: () => {
-          const baseTemplate = [
+          const tpl = [
             [1, 1, 1, 0, 0, 0],
             [0, 1, 1, 1, 0, 0],
             [0, 0, 1, 1, 1, 0],
@@ -649,28 +724,130 @@
             [1, 0, 0, 0, 1, 1],
             [1, 1, 0, 0, 0, 1]
           ];
-          let rowOrder = shuffleArray([0, 1, 2, 3, 4, 5]);
-          let colOrder = shuffleArray([0, 1, 2, 3, 4, 5]);
-          let g = Array.from({ length: 6 }, () => Array(6).fill(0));
-          for (let r = 0; r < 6; r++) {
-            for (let c = 0; c < 6; c++) {
-              g[r][c] = baseTemplate[rowOrder[r]][colOrder[c]];
-            }
-          }
-          const bugR = randomInt(0, 5);
-          const bugC = randomInt(0, 5);
-          g[bugR][bugC] = 1 - g[bugR][bugC];
+          const ro = shuffleArray([0, 1, 2, 3, 4, 5]);
+          const co = shuffleArray([0, 1, 2, 3, 4, 5]);
+          let g = Array.from({ length: 6 }, (_, r) =>
+            Array.from({ length: 6 }, (_, c) => tpl[ro[r]][co[c]])
+          );
+          g[randomInt(0, 5)][randomInt(0, 5)] ^= 1;
           return g;
         },
         validate: (g) => {
-          const N = g.length;
-          for (let r = 0; r < N; r++) {
+          for (let r = 0; r < 6; r++)
             if (g[r].reduce((a, b) => a + b, 0) !== 3) return false;
+          for (let c = 0; c < 6; c++) {
+            let s = 0;
+            for (let r = 0; r < 6; r++) s += g[r][c];
+            if (s !== 3) return false;
           }
-          for (let c = 0; c < N; c++) {
-            let sum = 0;
-            for (let r = 0; r < N; r++) sum += g[r][c];
-            if (sum !== 3) return false;
+          return true;
+        }
+      },
+
+      // 13. Cyclic Shift Register (6x6)
+      {
+        id: 13,
+        name: "Register Geser Siklis (Shift Pattern)",
+        difficulty: "Ahli (6x6)",
+        size: 6,
+        maxEdits: 1,
+        rule: "Aturan: Setiap baris ke bawah merupakan salinan baris atasnya yang DIGESER KE KANAN 1 langkah secara melingkar (siklis). Ada 1 kotak yang bergeser tidak tepat!",
+        generate: () => {
+          let baseRow = [1, 1, 0, 1, 0, 0];
+          if (randomInt(0, 1) === 1) baseRow = shuffleArray(baseRow);
+          let g = [];
+          for (let r = 0; r < 6; r++) {
+            let row = [];
+            for (let c = 0; c < 6; c++) {
+              row.push(baseRow[(c - r + 18) % 6]);
+            }
+            g.push(row);
+          }
+          g[randomInt(0, 5)][randomInt(0, 5)] ^= 1;
+          return g;
+        },
+        validate: (g) => {
+          for (let r = 1; r < 6; r++) {
+            for (let c = 0; c < 6; c++) {
+              if (g[r][c] !== g[r - 1][(c - 1 + 6) % 6]) return false;
+            }
+          }
+          return true;
+        }
+      },
+
+      // 14. 8x8 Concentric Rings (8x8)
+      {
+        id: 14,
+        name: "Cincin Konsentris Persegi",
+        difficulty: "Master (8x8)",
+        size: 8,
+        maxEdits: 1,
+        rule: "Aturan: Pola gelang bertingkat dari luar ke dalam. Lapis 0 (terluar) = 1, Lapis 1 = 0, Lapis 2 = 1, Lapis 3 (tengah inti) = 0. Temukan 1 kotak yang bocor lapisannya!",
+        generate: () => {
+          let g = Array.from({ length: 8 }, (_, r) =>
+            Array.from({ length: 8 }, (_, c) => {
+              const layer = Math.min(r, c, 7 - r, 7 - c);
+              return layer % 2 === 0 ? 1 : 0;
+            })
+          );
+          g[randomInt(0, 7)][randomInt(0, 7)] ^= 1;
+          return g;
+        },
+        validate: (g) => {
+          for (let r = 0; r < 8; r++) {
+            for (let c = 0; c < 8; c++) {
+              const layer = Math.min(r, c, 7 - r, 7 - c);
+              if (g[r][c] !== (layer % 2 === 0 ? 1 : 0)) return false;
+            }
+          }
+          return true;
+        }
+      },
+
+      // 15. 8x8 Master Dual-Glitch Parity Matrix (8x8, 2 Edits)
+      {
+        id: 15,
+        name: "Grand Master Paritas 8x8 (2 Bug)",
+        difficulty: "Grand Master (8x8)",
+        size: 8,
+        maxEdits: 2,
+        rule: "Aturan Puncak: Kode Hamming 8-Bit. SETIAP baris DAN SETIAP kolom wajib memiliki jumlah 1 yang GENAP. Dua bit mengalami interferensi sinyal, perbaiki keduanya (Batas: 2 klik)!",
+        generate: () => {
+          let g = Array.from({ length: 8 }, () => Array(8).fill(0));
+          for (let r = 0; r < 7; r++)
+            for (let c = 0; c < 7; c++)
+              g[r][c] = randomInt(0, 1);
+
+          for (let r = 0; r < 7; r++) {
+            const s = g[r].slice(0, 7).reduce((a, b) => a + b, 0);
+            g[r][7] = s % 2 === 0 ? 0 : 1;
+          }
+          for (let c = 0; c < 8; c++) {
+            let cs = 0;
+            for (let r = 0; r < 7; r++) cs += g[r][c];
+            g[7][c] = cs % 2 === 0 ? 0 : 1;
+          }
+
+          let bugs = 0, touched = new Set();
+          while (bugs < 2) {
+            const br = randomInt(0, 7), bc = randomInt(0, 7);
+            const key = `${br},${bc}`;
+            if (!touched.has(key)) {
+              touched.add(key);
+              g[br][bc] ^= 1;
+              bugs++;
+            }
+          }
+          return g;
+        },
+        validate: (g) => {
+          for (let r = 0; r < 8; r++)
+            if (g[r].reduce((a, b) => a + b, 0) % 2 !== 0) return false;
+          for (let c = 0; c < 8; c++) {
+            let cs = 0;
+            for (let r = 0; r < 8; r++) cs += g[r][c];
+            if (cs % 2 !== 0) return false;
           }
           return true;
         }
@@ -681,7 +858,7 @@
     let grid = [];
     let initialClone = [];
 
-    // DOM Bindings
+    // DOM Elements
     const studentInput = document.getElementById("student-name");
     const tokenDisplay = document.getElementById("token-display");
     const gridEl = document.getElementById("grid");
@@ -754,13 +931,18 @@
 
     function renderGrid(size) {
       gridEl.innerHTML = "";
-      gridEl.style.gridTemplateColumns = `repeat(${size}, 44px)`;
-      gridEl.style.gridTemplateRows = `repeat(${size}, 44px)`;
+      // Sesuaikan ukuran sel agar pas di layar jika grid 8x8
+      const cellSize = size === 8 ? 38 : (size === 6 ? 42 : 46);
+      gridEl.style.gridTemplateColumns = `repeat(${size}, ${cellSize}px)`;
+      gridEl.style.gridTemplateRows = `repeat(${size}, ${cellSize}px)`;
 
       for (let r = 0; r < size; r++) {
         for (let c = 0; c < size; c++) {
           const cell = document.createElement("div");
           cell.className = "cell";
+          cell.style.width = `${cellSize}px`;
+          cell.style.height = `${cellSize}px`;
+          cell.style.fontSize = size === 8 ? "1rem" : "1.15rem";
           cell.dataset.r = r;
           cell.dataset.c = c;
           updateCellDisplay(cell, grid[r][c], r, c);
@@ -777,10 +959,8 @@
       }
     }
 
-    // Pembaruan sel: warna background tetap sama, hanya angka dan status modifikasi yang berubah
     function updateCellDisplay(cellEl, val, r, c) {
       cellEl.textContent = val;
-
       if (grid[r][c] !== initialClone[r][c]) {
         cellEl.classList.add("toggled");
       } else {
@@ -813,7 +993,7 @@
         durationSeconds: durationSec
       };
 
-      syncStatus.textContent = "Mengirim progres ke guru...";
+      syncStatus.textContent = "Menyimpan ke Spreadsheet...";
 
       fetch(GOOGLE_APPS_SCRIPT_URL, {
         method: "POST",
@@ -822,11 +1002,11 @@
         body: JSON.stringify(payload)
       })
       .then(() => {
-        syncStatus.textContent = "✓ Terkirim ke Spreadsheet Guru.";
+        syncStatus.textContent = "✓ Data progres siswa berhasil diperbarui di Spreadsheet!";
       })
       .catch((err) => {
         console.warn("Log gagal terkirim:", err);
-        syncStatus.textContent = "⚠ Catatan tersimpan secara lokal (koneksi offline).";
+        syncStatus.textContent = "⚠ Mode offline (tersimpan lokal).";
       });
     }
 
@@ -884,11 +1064,12 @@
       if (currentIdx < levels.length - 1) {
         loadLevel(currentIdx + 1);
       } else {
-        statusBox.textContent = "🎉 Luar biasa! Seluruh tantangan logika dan bug biner berhasil kamu taklukkan!";
+        statusBox.textContent = "🎉 Selamat! Kamu telah menaklukkan seluruh 15 Level Master Biner!";
         statusBox.className = "status-box success";
       }
     });
 
+    // Booting awal
     loadLevel(0);
   </script>
 </body>
