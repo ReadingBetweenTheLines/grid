@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Pemburu Bug Biner: 15 Tantangan Logika</title>
+  <title>Pemburu Bug Biner: 15 Tantangan Logika (Auto-Save)</title>
   <style>
     :root {
       --bg: #0f172a;
@@ -100,6 +100,14 @@
       padding: 0.35rem 0.6rem;
       border-radius: 4px;
       border: 1px dashed var(--accent);
+    }
+
+    .saved-badge {
+      font-size: 0.75rem;
+      color: var(--success);
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
     }
 
     .container {
@@ -281,13 +289,14 @@
 
   <header>
     <h1>Pemburu Bug Biner</h1>
-    <p class="subtitle">15 Tantangan Algoritma & Logika Matriks Biner</p>
+    <p class="subtitle">15 Tantangan Algoritma & Logika Matriks Biner (Penyimpanan Otomatis Aktif)</p>
   </header>
 
   <div class="student-bar">
     <label for="student-name">Nama Siswa / No. Absen:</label>
     <input type="text" id="student-name" placeholder="Tuliskan nama lengkap..." value="Siswa 1" />
     <span class="token-badge" id="token-display">ID: #0000</span>
+    <span class="saved-badge" id="autosave-status">● Auto-Save</span>
   </div>
 
   <div class="container">
@@ -342,6 +351,7 @@
 
     let levelAttempts = {};
     let levelStartTime = Date.now();
+    let solvedLevels = new Set(); // Melacak level mana saja yang sudah solved
 
     // ==========================================
     // PRNG BERBASIS SEED
@@ -380,7 +390,6 @@
     // 15 LEVEL PROSEDURAL & ATURAN VALIDASI
     // ==========================================
     const levels = [
-      // 1. Warmup (4x4)
       {
         id: 1,
         name: "Keseragaman Baris (Homogen)",
@@ -390,17 +399,12 @@
         rule: "Aturan: Setiap baris harus seragam (hanya berisi angka 0 semua atau 1 semua). Ada tepat 1 kotak rusak.",
         generate: () => {
           let g = [];
-          for (let r = 0; r < 4; r++) {
-            g.push(Array(4).fill(randomInt(0, 1)));
-          }
-          const br = randomInt(0, 3), bc = randomInt(0, 3);
-          g[br][bc] = 1 - g[br][bc];
+          for (let r = 0; r < 4; r++) g.push(Array(4).fill(randomInt(0, 1)));
+          g[randomInt(0, 3)][randomInt(0, 3)] ^= 1;
           return g;
         },
         validate: (g) => g.every(row => row.every(val => val === row[0]))
       },
-
-      // 2. Diagonal Identity (4x4)
       {
         id: 2,
         name: "Identitas Diagonal (Utama / Anti)",
@@ -423,24 +427,21 @@
           return g;
         },
         validate: (g) => {
-          const N = 4;
           const chkMain = () => {
-            for (let r = 0; r < N; r++)
-              for (let c = 0; c < N; c++)
+            for (let r = 0; r < 4; r++)
+              for (let c = 0; c < 4; c++)
                 if (g[r][c] !== (r === c ? 1 : 0)) return false;
             return true;
           };
           const chkAnti = () => {
-            for (let r = 0; r < N; r++)
-              for (let c = 0; c < N; c++)
-                if (g[r][c] !== (c === N - 1 - r ? 1 : 0)) return false;
+            for (let r = 0; r < 4; r++)
+              for (let c = 0; c < 4; c++)
+                if (g[r][c] !== (c === 3 - r ? 1 : 0)) return false;
             return true;
           };
           return chkMain() || chkAnti();
         }
       },
-
-      // 3. Vertical Mirror (4x4)
       {
         id: 3,
         name: "Simetri Cermin Vertikal",
@@ -466,8 +467,6 @@
           return true;
         }
       },
-
-      // 4. Inverted Horizontal Mirror (4x4)
       {
         id: 4,
         name: "Simetri Cermin Terbalik (Horisontal)",
@@ -494,8 +493,6 @@
           return true;
         }
       },
-
-      // 5. Checkerboard (5x5)
       {
         id: 5,
         name: "Papan Catur Selang-Seling",
@@ -519,8 +516,6 @@
           return true;
         }
       },
-
-      // 6. Perimeter Frame (5x5)
       {
         id: 6,
         name: "Bingkai Luar Tertutup",
@@ -552,8 +547,6 @@
           return true;
         }
       },
-
-      // 7. Even Row Parity (5x5)
       {
         id: 7,
         name: "Paritas Baris Genap (Checksum)",
@@ -578,8 +571,6 @@
         },
         validate: (g) => g.every(r => r.reduce((a, b) => a + b, 0) % 2 === 0)
       },
-
-      // 8. 2D Parity Matrix (5x5)
       {
         id: 8,
         name: "Matriks Paritas 2D (Kode Hamming)",
@@ -616,8 +607,6 @@
           return true;
         }
       },
-
-      // 9. Modulo 3 Periodic Shift (6x6)
       {
         id: 9,
         name: "Pola Gelombang Modulo-3",
@@ -639,8 +628,6 @@
           return true;
         }
       },
-
-      // 10. Horizontal Mirror Symmetry (6x6)
       {
         id: 10,
         name: "Refleksi Cermin Horisontal",
@@ -666,8 +653,6 @@
           return true;
         }
       },
-
-      // 11. Dual-Glitch 4-Way Symmetry (6x6, 2 Edits)
       {
         id: 11,
         name: "Simetri Ganda 4 Arah (2 Bug)",
@@ -706,8 +691,6 @@
           return true;
         }
       },
-
-      // 12. Latin Square Balance (6x6)
       {
         id: 12,
         name: "Keseimbangan Latin Biner",
@@ -743,8 +726,6 @@
           return true;
         }
       },
-
-      // 13. Cyclic Shift Register (6x6)
       {
         id: 13,
         name: "Register Geser Siklis (Shift Pattern)",
@@ -775,8 +756,6 @@
           return true;
         }
       },
-
-      // 14. 8x8 Concentric Rings (8x8)
       {
         id: 14,
         name: "Cincin Konsentris Persegi",
@@ -804,8 +783,6 @@
           return true;
         }
       },
-
-      // 15. 8x8 Master Dual-Glitch Parity Matrix (8x8, 2 Edits)
       {
         id: 15,
         name: "Grand Master Paritas 8x8 (2 Bug)",
@@ -875,6 +852,43 @@
     const prevBtn = document.getElementById("prev-btn");
     const nextBtn = document.getElementById("next-btn");
 
+    // ==========================================
+    // LOCALSTORAGE PERSISTENCE ENGINE
+    // ==========================================
+    function getStorageKey(subKey) {
+      const studentClean = studentInput.value.trim().toLowerCase().replace(/\s+/g, '_') || 'anon';
+      return `binary_hunter_${studentClean}_${subKey}`;
+    }
+
+    function saveCurrentState() {
+      try {
+        const lvl = levels[currentIdx];
+        const stateData = {
+          currentIdx: currentIdx,
+          grid: grid,
+          initialClone: initialClone,
+          levelAttempts: levelAttempts,
+          solvedLevels: Array.from(solvedLevels),
+          studentName: studentInput.value.trim()
+        };
+        localStorage.setItem(getStorageKey(`lvl_${lvl.id}`), JSON.stringify(stateData));
+        localStorage.setItem('binary_hunter_last_active_student', studentInput.value.trim());
+        localStorage.setItem(getStorageKey('last_level_idx'), currentIdx);
+      } catch (err) {
+        console.warn("Auto-save localStorage error:", err);
+      }
+    }
+
+    function loadSavedState(levelId) {
+      try {
+        const raw = localStorage.getItem(getStorageKey(`lvl_${levelId}`));
+        if (!raw) return null;
+        return JSON.parse(raw);
+      } catch (err) {
+        return null;
+      }
+    }
+
     function countEdits() {
       let edits = 0;
       const N = grid.length;
@@ -899,6 +913,7 @@
 
       levelStartTime = Date.now();
 
+      // Buat seed deterministik berdasarkan Nama Siswa dan Nomor Level
       const rawSeedStr = `${studentInput.value.trim().toLowerCase()}_lvl_${lvl.id}`;
       setSeedFromString(rawSeedStr);
 
@@ -919,19 +934,34 @@
       syncStatus.textContent = "";
 
       prevBtn.disabled = currentIdx === 0;
-      nextBtn.disabled = true;
 
-      const generated = lvl.generate();
-      grid = JSON.parse(JSON.stringify(generated));
-      initialClone = JSON.parse(JSON.stringify(generated));
+      // Cek apakah ada data tersimpan di LocalStorage untuk level ini
+      const saved = loadSavedState(lvl.id);
+      if (saved && saved.grid && saved.initialClone) {
+        grid = saved.grid;
+        initialClone = saved.initialClone;
+        if (saved.levelAttempts) levelAttempts = saved.levelAttempts;
+        if (saved.solvedLevels) solvedLevels = new Set(saved.solvedLevels);
+      } else {
+        const generated = lvl.generate();
+        grid = JSON.parse(JSON.stringify(generated));
+        initialClone = JSON.parse(JSON.stringify(generated));
+      }
+
+      // Aktifkan tombol next jika level ini sudah pernah dipecahkan sebelumnya
+      nextBtn.disabled = !solvedLevels.has(lvl.id);
+      if (solvedLevels.has(lvl.id)) {
+        statusBox.textContent = "✓ Level ini sudah kamu selesaikan sebelumnya!";
+        statusBox.className = "status-box success";
+      }
 
       updateCounterUI();
       renderGrid(lvl.size);
+      saveCurrentState();
     }
 
     function renderGrid(size) {
       gridEl.innerHTML = "";
-      // Sesuaikan ukuran sel agar pas di layar jika grid 8x8
       const cellSize = size === 8 ? 38 : (size === 6 ? 42 : 46);
       gridEl.style.gridTemplateColumns = `repeat(${size}, ${cellSize}px)`;
       gridEl.style.gridTemplateRows = `repeat(${size}, ${cellSize}px)`;
@@ -952,6 +982,7 @@
             updateCellDisplay(cell, grid[r][c], r, c);
             updateCounterUI();
             statusBox.textContent = "";
+            saveCurrentState(); // Auto-save setiap kali ada kotak yang diklik
           });
 
           gridEl.appendChild(cell);
@@ -970,7 +1001,7 @@
 
     function logResultToSpreadsheet(isSuccess, edits) {
       if (!GOOGLE_APPS_SCRIPT_URL || GOOGLE_APPS_SCRIPT_URL.includes("TEMPEL_URL")) {
-        syncStatus.textContent = "ℹ Google Sheets Tracker belum dikonfigurasi (mode lokal).";
+        syncStatus.textContent = "ℹ Google Sheets Tracker belum dikonfigurasi (progres tersimpan di memori browser).";
         return;
       }
 
@@ -1006,7 +1037,7 @@
       })
       .catch((err) => {
         console.warn("Log gagal terkirim:", err);
-        syncStatus.textContent = "⚠ Mode offline (tersimpan lokal).";
+        syncStatus.textContent = "⚠ Disimpan lokal di browser (koneksi terputus).";
       });
     }
 
@@ -1024,6 +1055,7 @@
         statusBox.textContent = `✗ Melebihi batas perubahan! Kamu melakukan ${edits} perubahan, batasnya hanya ${lvl.maxEdits}.`;
         statusBox.className = "status-box error";
         logResultToSpreadsheet(false, edits);
+        saveCurrentState();
         return;
       }
 
@@ -1032,12 +1064,15 @@
       if (isValid) {
         statusBox.textContent = "✓ Hebat! Aturan pola berhasil dipulihkan dengan benar!";
         statusBox.className = "status-box success";
+        solvedLevels.add(lvl.id);
         nextBtn.disabled = false;
         logResultToSpreadsheet(true, edits);
+        saveCurrentState();
       } else {
         statusBox.textContent = "✗ Pola belum memenuhi aturan. Periksa kembali baris, kolom, atau simetrinya.";
         statusBox.className = "status-box error";
         logResultToSpreadsheet(false, edits);
+        saveCurrentState();
       }
     }
 
@@ -1051,15 +1086,23 @@
       });
       updateCounterUI();
       statusBox.textContent = "";
+      saveCurrentState();
     }
 
     // Event Handlers
-    studentInput.addEventListener("change", () => loadLevel(currentIdx));
+    studentInput.addEventListener("change", () => {
+      // Jika nama diganti, muat level terakhir milik nama tersebut jika ada
+      const lastLvl = localStorage.getItem(getStorageKey('last_level_idx'));
+      loadLevel(lastLvl !== null ? parseInt(lastLvl) : 0);
+    });
+
     checkBtn.addEventListener("click", checkSolution);
     resetBtn.addEventListener("click", resetCurrent);
+    
     prevBtn.addEventListener("click", () => {
       if (currentIdx > 0) loadLevel(currentIdx - 1);
     });
+
     nextBtn.addEventListener("click", () => {
       if (currentIdx < levels.length - 1) {
         loadLevel(currentIdx + 1);
@@ -1069,8 +1112,19 @@
       }
     });
 
-    // Booting awal
-    loadLevel(0);
+    // ==========================================
+    // INITIAL BOOTSTRAP DENGAN RESTORE
+    // ==========================================
+    window.addEventListener('DOMContentLoaded', () => {
+      // Pulihkan nama siswa terakhir di browser jika ada
+      const lastStudent = localStorage.getItem('binary_hunter_last_active_student');
+      if (lastStudent) {
+        studentInput.value = lastStudent;
+      }
+      // Pulihkan level terakhir yang sedang aktif dikerjakan
+      const lastLvlIdx = localStorage.getItem(getStorageKey('last_level_idx'));
+      loadLevel(lastLvlIdx !== null ? parseInt(lastLvlIdx) : 0);
+    });
   </script>
 </body>
 </html>
