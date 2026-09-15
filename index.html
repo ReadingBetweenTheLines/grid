@@ -389,14 +389,18 @@
     // ==========================================
     // 15 LEVEL PROSEDURAL & ATURAN VALIDASI
     // ==========================================
+    // ==========================================
+    // 15 LEVEL: BAHASA RAMAH SISWA KELAS 7 SMP
+    // ==========================================
     const levels = [
+      // Level 1 (4x4)
       {
         id: 1,
-        name: "Keseragaman Baris (Homogen)",
+        name: "Baris Seragam (Angka Kembar)",
         difficulty: "Pemanasan (4x4)",
         size: 4,
         maxEdits: 1,
-        rule: "Aturan: Setiap baris harus seragam (hanya berisi angka 0 semua atau 1 semua). Ada tepat 1 kotak rusak.",
+        rule: "🎯 Misi: Dalam satu baris mendatar, semua angkanya HARUS SAMA KEMBAR (harus 0 semua, atau 1 semua).\n👉 Temukan 1 kotak 'penyusup' yang angkanya berbeda sendiri di barisnya, lalu klik kotak itu untuk mengubahnya!",
         generate: () => {
           let g = [];
           for (let r = 0; r < 4; r++) g.push(Array(4).fill(randomInt(0, 1)));
@@ -405,13 +409,15 @@
         },
         validate: (g) => g.every(row => row.every(val => val === row[0]))
       },
+
+      // Level 2 (4x4)
       {
         id: 2,
-        name: "Identitas Diagonal (Utama / Anti)",
+        name: "Jalur Miring (Diagonal)",
         difficulty: "Mudah (4x4)",
         size: 4,
         maxEdits: 1,
-        rule: "Aturan: Garis lurus diagonal dari satu sudut ke sudut seberangnya HANYA berisi 1. Semua kotak lainnya WAJIB 0. Temukan 1 kotak penyusup!",
+        rule: "🎯 Misi: Bayangkan jalur garis miring dari satu sudut ke sudut seberangnya. HANYA garis miring itu yang boleh berisi angka 1. Semua kotak di luar jalur miring WAJIB bernilai 0.\n👉 Cari 1 angka '1' yang nyasar di luar jalur miring!",
         generate: () => {
           const isAnti = randomInt(0, 1) === 1;
           let g = Array.from({ length: 4 }, () => Array(4).fill(0));
@@ -442,13 +448,15 @@
           return chkMain() || chkAnti();
         }
       },
+
+      // Level 3 (4x4)
       {
         id: 3,
-        name: "Simetri Cermin Vertikal",
+        name: "Cermin Kiri-Kanan",
         difficulty: "Mudah (4x4)",
         size: 4,
         maxEdits: 1,
-        rule: "Aturan: Refleksi tegak (kiri-kanan). Kolom 0 sama dengan Kolom 3, dan Kolom 1 sama dengan Kolom 2. Kamu bebas memperbaiki salah satu sisi.",
+        rule: "🎯 Misi: Bayangkan ada cermin tegak di tengah-tengah kotak. Sisi kiri harus menjadi pantulan kembar dari sisi kanan (Kolom paling kiri kembar dengan kolom paling kanan; dua kolom di tengah juga kembar).\n👉 Ada sepasang kotak yang tidak cocok pantulannya. Klik salah satunya agar keduanya sama!",
         generate: () => {
           let g = Array.from({ length: 4 }, () => Array(4).fill(0));
           for (let r = 0; r < 4; r++) {
@@ -467,13 +475,15 @@
           return true;
         }
       },
+
+      // Level 4 (4x4)
       {
         id: 4,
-        name: "Simetri Cermin Terbalik (Horisontal)",
+        name: "Cermin Lawan (Atas vs Bawah)",
         difficulty: "Dasar (4x4)",
         size: 4,
         maxEdits: 1,
-        rule: "Aturan: Nilai baris bawah merupakan KEBALIKAN (inversi biner NOT) dari baris atasnya (Baris 3 kebalikan Baris 0; Baris 2 kebalikan Baris 1). Temukan 1 kotak yang salah!",
+        rule: "🎯 Misi: Baris bagian bawah adalah LAWAN KATA (kebalikan) dari baris bagian atas. Jika baris paling atas adalah 1, pasangannya di baris paling bawah harus 0, begitu sebaliknya.\n👉 Cari 1 kotak yang lupa berbalik nilai dengan pasangannya!",
         generate: () => {
           let g = Array.from({ length: 4 }, () => Array(4).fill(0));
           for (let r = 0; r < 2; r++) {
@@ -493,13 +503,15 @@
           return true;
         }
       },
+
+      // Level 5 (5x5)
       {
         id: 5,
         name: "Papan Catur Selang-Seling",
         difficulty: "Dasar (5x5)",
         size: 5,
         maxEdits: 1,
-        rule: "Aturan: Paritas selang-seling murni. Tidak boleh ada dua kotak bersebelahan (atas/bawah/kiri/kanan) memiliki angka yang sama.",
+        rule: "🎯 Misi: Seperti papan catur hitam-putih, angkanya harus BERGANTIAN selang-seling (1, 0, 1, 0...). Kotak yang menempel langsung di atas, bawah, kiri, atau kanan TIDAK BOLEH berangka sama.\n👉 Cari 1 kotak yang membuat dua angka kembar menempel bersebelahan!",
         generate: () => {
           const s = randomInt(0, 1);
           let g = Array.from({ length: 5 }, (_, r) =>
@@ -516,13 +528,15 @@
           return true;
         }
       },
+
+      // Level 6 (5x5)
       {
         id: 6,
-        name: "Bingkai Luar Tertutup",
+        name: "Bingkai Foto Rapi",
         difficulty: "Menengah (5x5)",
         size: 5,
         maxEdits: 1,
-        rule: "Aturan: Semua sel di batas keliling terluar wajib bernilai sama (semua 1 atau semua 0), dan bagian dalam tengah berlawanan nilai. Cari 1 sel yang bocor!",
+        rule: "🎯 Misi: Semua kotak di garis tepi/pinggir terluar (seperti bingkai foto) harus memiliki angka yang SAMA. Kotak di bagian dalam tengah harus berangka sebaliknya.\n👉 Ada 1 kotak di bagian bingkai atau bagian dalam yang salah angka sehingga polanya bocor!",
         generate: () => {
           const borderVal = randomInt(0, 1);
           const innerVal = 1 - borderVal;
@@ -547,13 +561,15 @@
           return true;
         }
       },
+
+      // Level 7 (5x5)
       {
         id: 7,
-        name: "Paritas Baris Genap (Checksum)",
+        name: "Hitungan Genap Tiap Baris",
         difficulty: "Menengah (5x5)",
         size: 5,
         maxEdits: 1,
-        rule: "Aturan: Setiap baris WAJIB memiliki jumlah angka 1 yang GENAP (total 0, 2, atau 4). Temukan baris ganjil dan ubah salah satu kotaknya!",
+        rule: "🎯 Misi: Hitung banyaknya angka 1 di setiap baris mendatar. Jumlah angka 1 pada SETIAP baris HARUS BERJUMLAH GENAP (boleh ada 0, 2, atau 4 buah angka 1).\n👉 Hitung baris demi baris: cari baris yang jumlah angka 1-nya ganjil (1 atau 3 buah), lalu ubah salah satu kotaknya agar baris itu menjadi genap!",
         generate: () => {
           let g = [];
           for (let r = 0; r < 5; r++) {
@@ -571,13 +587,15 @@
         },
         validate: (g) => g.every(r => r.reduce((a, b) => a + b, 0) % 2 === 0)
       },
+
+      // Level 8 (5x5)
       {
         id: 8,
-        name: "Matriks Paritas 2D (Kode Hamming)",
+        name: "Detektif Silang (Baris & Kolom Genap)",
         difficulty: "Menengah (5x5)",
         size: 5,
         maxEdits: 1,
-        rule: "Aturan: Paritas Dua Arah. SETIAP baris DAN SETIAP kolom wajib memiliki jumlah 1 yang GENAP. Titik temu baris dan kolom ganjil menentukan letak kotaknya!",
+        rule: "🎯 Misi: Seperti kode rahasia komputer, jumlah angka 1 pada SETIAP baris DAN SETIAP kolom tegak WAJIB GENAP.\n👉 Tips Cepat: Cari baris yang jumlah angka 1-nya ganjil, lalu cari kolom tegak yang jumlah angka 1-nya ganjil. Titik temu pertemuan keduanya adalah letak kotak yang rusak!",
         generate: () => {
           let g = Array.from({ length: 5 }, () => Array(5).fill(0));
           for (let r = 0; r < 4; r++)
@@ -607,13 +625,15 @@
           return true;
         }
       },
+
+      // Level 9 (6x6)
       {
         id: 9,
-        name: "Pola Gelombang Modulo-3",
+        name: "Kelipatan Loncat 3",
         difficulty: "Tantangan (6x6)",
         size: 6,
         maxEdits: 1,
-        rule: "Aturan: Kotak bernilai 1 HANYA jika penjumlahan nomor (baris + kolom) habis dibagi 3 ((r + c) mod 3 == 0). Temukan 1 sel yang melanggar aturan ritme ini!",
+        rule: "🎯 Misi: Angka 1 HANYA boleh muncul setiap jarak 3 langkah (garis miring berulang: 1 lalu dua 0, lalu 1 lagi).\n👉 Perhatikan garis miring yang terbentuk di layar. Cari 1 kotak yang memecah jarak loncatan tersebut!",
         generate: () => {
           let g = Array.from({ length: 6 }, (_, r) =>
             Array.from({ length: 6 }, (_, c) => (r + c) % 3 === 0 ? 1 : 0)
@@ -628,13 +648,15 @@
           return true;
         }
       },
+
+      // Level 10 (6x6)
       {
         id: 10,
-        name: "Refleksi Cermin Horisontal",
+        name: "Cermin Atas-Bawah",
         difficulty: "Tantangan (6x6)",
         size: 6,
         maxEdits: 1,
-        rule: "Aturan: Simetri cermin atas-bawah. Baris 0 harus identik dengan Baris 5, Baris 1 identik dengan Baris 4, dan Baris 2 identik dengan Baris 3. Perbaiki salah satu pasangannya!",
+        rule: "🎯 Misi: Bayangkan cermin mendatar di garis tengah. Baris paling atas harus sama persis dengan baris paling bawah, baris ke-2 sama dengan baris ke-5, dan baris ke-3 sama dengan baris ke-4.\n👉 Cari sepasang kotak pantulan yang tidak kembar, lalu klik salah satunya agar cocok!",
         generate: () => {
           let g = Array.from({ length: 6 }, () => Array(6).fill(0));
           for (let r = 0; r < 3; r++) {
@@ -653,13 +675,15 @@
           return true;
         }
       },
+
+      // Level 11 (6x6, 2 Edits)
       {
         id: 11,
-        name: "Simetri Ganda 4 Arah (2 Bug)",
+        name: "Cermin Lipat Empat (2 Bug)",
         difficulty: "Mahir (6x6)",
         size: 6,
         maxEdits: 2,
-        rule: "Aturan: Cermin 4 Arah. Grid harus simetris secara Vertikal (kiri-kanan) DAN Horisontal (atas-bawah). Ada 2 kotak rusak, kamu memiliki batas 2 klik.",
+        rule: "🎯 Misi: Bayangkan kertas ini dilipat dua kali: dilipat ke samping (kiri-kanan) dan dilipat ke bawah (atas-bawah). Semua pola di 4 sudut harus sama persis.\n👉 AWAS: Ada 2 kotak rusak di tempat terpisah! Gunakan jatah 2 klik kamu untuk memperbaikinya.",
         generate: () => {
           let g = Array.from({ length: 6 }, () => Array(6).fill(0));
           for (let r = 0; r < 3; r++) {
@@ -691,13 +715,15 @@
           return true;
         }
       },
+
+      // Level 12 (6x6)
       {
         id: 12,
-        name: "Keseimbangan Latin Biner",
+        name: "Keseimbangan Adil (3 Angka '1')",
         difficulty: "Mahir (6x6)",
         size: 6,
         maxEdits: 1,
-        rule: "Aturan: Tepat ada 3 angka '1' dan 3 angka '0' di SETIAP baris DAN di SETIAP kolom. Cari 1 sel yang membuat baris sekaligus kolomnya tidak seimbang!",
+        rule: "🎯 Misi: Aturan adil 50:50. Di setiap baris dan di setiap kolom, HARUS ada tepat tiga buah angka 1 dan tiga buah angka 0.\n👉 Cari satu baris dan satu kolom yang kelebihan atau kekurangan angka 1, lalu klik titik temu selnya agar pas menjadi 3!",
         generate: () => {
           const tpl = [
             [1, 1, 1, 0, 0, 0],
@@ -726,13 +752,15 @@
           return true;
         }
       },
+
+      // Level 13 (6x6)
       {
         id: 13,
-        name: "Register Geser Siklis (Shift Pattern)",
+        name: "Roda Geser Berputar (Siklis)",
         difficulty: "Ahli (6x6)",
         size: 6,
         maxEdits: 1,
-        rule: "Aturan: Setiap baris ke bawah merupakan salinan baris atasnya yang DIGESER KE KANAN 1 langkah secara melingkar (siklis). Ada 1 kotak yang bergeser tidak tepat!",
+        rule: "🎯 Misi: Pola tiap baris sama persis, tetapi selalu BERGESER 1 LANGKAH KE KANAN di baris bawahnya (seperti roda berputar: angka paling ujung kanan akan pindah memutar ke paling kiri).\n👉 Amati urutan jalannya angka: temukan 1 kotak yang bergeser salah langkah!",
         generate: () => {
           let baseRow = [1, 1, 0, 1, 0, 0];
           if (randomInt(0, 1) === 1) baseRow = shuffleArray(baseRow);
@@ -756,13 +784,15 @@
           return true;
         }
       },
+
+      // Level 14 (8x8)
       {
         id: 14,
-        name: "Cincin Konsentris Persegi",
+        name: "Lingkaran Lapisan Berlapis (Konsentris)",
         difficulty: "Master (8x8)",
         size: 8,
         maxEdits: 1,
-        rule: "Aturan: Pola gelang bertingkat dari luar ke dalam. Lapis 0 (terluar) = 1, Lapis 1 = 0, Lapis 2 = 1, Lapis 3 (tengah inti) = 0. Temukan 1 kotak yang bocor lapisannya!",
+        rule: "🎯 Misi: Bayangkan lingkaran gelang bersarang dari pinggir ke tengah. Lapisan paling luar = 1, masuk satu lapis ke dalam = 0, masuk lagi = 1, dan kotak paling tengah = 0.\n👉 Telusuri lapisan gelang tersebut: ada 1 kotak yang warnanya bocor ke lapisan lain!",
         generate: () => {
           let g = Array.from({ length: 8 }, (_, r) =>
             Array.from({ length: 8 }, (_, c) => {
@@ -783,13 +813,15 @@
           return true;
         }
       },
+
+      // Level 15 (8x8, 2 Edits)
       {
         id: 15,
-        name: "Grand Master Paritas 8x8 (2 Bug)",
+        name: "Tantangan Puncak: Detektif 8x8 (2 Bug)",
         difficulty: "Grand Master (8x8)",
         size: 8,
         maxEdits: 2,
-        rule: "Aturan Puncak: Kode Hamming 8-Bit. SETIAP baris DAN SETIAP kolom wajib memiliki jumlah 1 yang GENAP. Dua bit mengalami interferensi sinyal, perbaiki keduanya (Batas: 2 klik)!",
+        rule: "🎯 Misi Puncak: Uji ketelitian tertinggi! SETIAP baris mendatar DAN SETIAP kolom tegak harus memiliki jumlah angka 1 yang GENAP.\n👉 Ada DUA gangguan sinyal di posisi berbeda. Cari perpotongan baris dan kolom ganjil untuk menemukan keduanya (Batas: 2 klik)!",
         generate: () => {
           let g = Array.from({ length: 8 }, () => Array(8).fill(0));
           for (let r = 0; r < 7; r++)
